@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name" translatable="false">Art Space</string>
+    <string name="colorful">colorful</string>
+    <string name="colorful_year">2023</string>
+    <string name="blue_face">Blue Face</string>
+    <string name="blue_face_year">2021</string>
+    <string name="arquitectura">Arquitectura</string>
+    <string name="arquitectura_year">2022</string>
+    <string name="ilustracion">Ilustración</string>
+    <string name="ilustracion_year">2020</string>
+</resources>
