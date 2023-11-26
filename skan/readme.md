@@ -1,4 +1,4 @@
-# Weather Prediction Project
+# Natve Application Project
 
 ## Cover Page
 - **Title:** SKIN analyzer of ingredients for cosmetic products
