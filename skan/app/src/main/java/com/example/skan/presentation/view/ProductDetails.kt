@@ -1,72 +1,146 @@
 package com.example.skan.presentation.view
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import android.annotation.SuppressLint
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.graphics.component1
 import androidx.core.graphics.component2
+import com.example.skan.R
+import com.example.skan.domain.entities.Ingredient
+import com.example.skan.domain.entities.Product
+import com.example.skan.presentation.viewModel.ProductDetailsViewModel
+import androidx.compose.material.MaterialTheme as AppTheme
 
 @Composable
+@Preview
 fun ProductDetails() {
     ScrollableGrayBackground()
 }
 
 @Composable
 fun ScrollableGrayBackground() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.tertiaryContainer)
-    ) {
-
+    val viewModel: ProductDetailsViewModel = ProductDetailsViewModel()
+    val product: Product by viewModel.product.observeAsState(initial = Product())
+    val saveProduct: Boolean by viewModel.saveProduct.observeAsState(initial = false)
+    val applicationContext = LocalContext.current
+    viewModel.getData(applicationContext)
+    if (saveProduct){
+        SaveScreen()
+    }
+    else {
         Box(
             modifier = Modifier
-                .padding(24.dp)
-                .background(Color.White.copy(alpha = 0.5f),shape = RoundedCornerShape(8.dp))
-                .fillMaxWidth()
-                .fillMaxHeight(0.8f)
+                .fillMaxSize()
+                .background(brush = Brush.verticalGradient(
+                    colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)), // Specify your gradient colors here
+                    startY = 0f,
+                    endY = 2000f // Adjust the end position as needed
+                ))
         ) {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "ProductDetails",
-                    textAlign = TextAlign.Center,
+            Row(){
+                mainHeader()
+            }
+            Row(){
+                Box(
                     modifier = Modifier
+                        .padding(
+                            start = 18.dp,
+                            top = 70.dp,
+                            end = 18.dp,
+                            bottom = 100.dp
+                        )
+                        .background(Color.White.copy(alpha = 0.6f), shape = RoundedCornerShape(16.dp))
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                FirstContainer()
-                Spacer(modifier = Modifier.height(16.dp))
-                PointsList()
-                Spacer(modifier = Modifier.height(16.dp))
-                SecondContainer()
-                Spacer(modifier = Modifier.height(16.dp))
-                ThirdContainer()
-                repeat(3) { index ->
-                    ContainerWithText(text = "Container${index + 1}")
+                        .fillMaxHeight()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Descripción del Producto",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                           // if (product.id!! > 0){
+                                Icon(
+                                    painter = painterResource(id = R.drawable.favorite),
+                                    contentDescription = "Favorite Icon",
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .padding(2.dp)
+                                        .clickable {  },
+                                    tint = Color.Unspecified,
+                                )
+                                Icon(
+                                    painter = painterResource(id = R.drawable.review),
+                                    contentDescription = "Favorite Icon",
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .padding(2.dp)
+                                        .clickable {  },
+                                    tint = Color.Unspecified,
+                                )
+                            //}
+
+
+                            //if (product.id!! == 0){
+                                Icon(
+                                    painter = painterResource(id = R.drawable.save),
+                                    contentDescription = "Save Icon",
+                                    modifier = Modifier
+                                        .size(25.dp)
+                                        .clickable { viewModel.updateSave(true) },
+                                    tint = AppTheme.colors.primary,
+                                )
+                            //}
+                        }
+                        FirstContainer(product)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PointsList(product)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SecondContainer(product)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        ThirdContainer(product)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        FourthContainer(product)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        IngredientTable(product.ingredients)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
@@ -74,69 +148,78 @@ fun ScrollableGrayBackground() {
 }
 
 @Composable
-fun ContainerWithText(text: String) {
+fun mainHeader() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .background(Color.White)
+            .padding(start = 8.dp, top = 8.dp, end = 20.dp, bottom = 8.dp)
     ) {
-        Text(
-            text = text,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo2),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .width(140.dp)
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(0.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.help),
+                contentDescription = "Help",
+                modifier = Modifier.size(30.dp),
+                tint = Color.Unspecified
+            )
+        }
+        Spacer(modifier = Modifier.height(25.dp))
     }
 }
 
 @Composable
-fun FirstContainer() {
+fun FirstContainer(product: Product) {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Title: Quick Product Notes ",
-            modifier = Modifier.weight(1f)
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            text = "Notas rápidas sobre el producto "
         )
-    }
-    Spacer(modifier = Modifier.height(8.dp))
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
         Icon(
-            imageVector = Icons.Default.Call,
+            painter = painterResource(id = R.drawable.help),
+            tint = Color.Unspecified,
             contentDescription = "Help",
             modifier = Modifier
-                .padding(end = 4.dp)
+                .size(15.dp)
                 .clickable {
-                    // Handle click on help icon
                 }
         )
     }
-    Spacer(modifier = Modifier.height(8.dp))
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "(Click on Icons for more information)",
+            fontSize = 10.sp,
+            text = "(Click en el icono para mayor información)",
             color = Color.Gray
         )
     }
 }
 
 @Composable
-fun PointsList() {
+fun PointsList(product: Product) {
     val points = listOf(
-        "Paraben-Free" to true,
-        "Sulfate-Free" to true,
-        "Alcohol-Free" to true,
-        "Silicone-Free" to false,
-        "EU Allergen-Free" to false,
-        "Fungal Acne (Malassezia) Safe" to false
+        "Libre de parabenos" to product.parabenFree,
+        "Libre de sulfatos" to product.sulfateFree,
+        "Libre de alcohol" to product.alcoholFree,
+        "Libre de siliconas" to product.siliconeFree,
+        "Libre de alérgenos de la UE" to product.euAllergenFree,
+        "Seguro para acné" to product.fungalAcne
     )
 
     points.forEach { (point, isSelected) ->
@@ -145,10 +228,17 @@ fun PointsList() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
+                fontSize = 13.sp,
                 text = point,
                 modifier = Modifier.weight(1f)
+
             )
-            StatusIcon(isSelected)
+            if (isSelected != null) {
+                StatusIcon(isSelected)
+            }
+            else{
+                StatusIcon(true)
+            }
         }
     }
 }
@@ -156,11 +246,11 @@ fun PointsList() {
 @Composable
 fun StatusIcon(isSelected: Boolean) {
     val icon: ImageVector = if (isSelected) {
-        Icons.Default.Check
+        Icons.Default.CheckCircle
     } else {
         Icons.Default.Close
     }
-    val iconColor = if (isSelected) Color.Green else Color.Red
+    val iconColor = if (isSelected) Color(0xFF30b0c7) else Color(0xFF535353)
 
     Icon(
         imageVector = icon,
@@ -170,27 +260,42 @@ fun StatusIcon(isSelected: Boolean) {
 }
 
 @Composable
-fun SecondContainer() {
-    Text(
-        text = "Notable Effects & Ingredients",
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
+fun SecondContainer(product: Product) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Efectos e Ingredientes notables ",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.help),
+            tint = Color.Unspecified,
+            contentDescription = "Help",
+            modifier = Modifier
+                .size(15.dp)
+                .clickable {
+                }
+        )
+    }
+
     val effectsAndIngredients = listOf(
-        "Acne Fighting" to 2,
-        "Brightening" to 3,
-        "UV Protection" to 5,
-        "Wound Healing" to 4,
-        "Anti Aging" to 6
+        "Combate acné" to (product.acneFighting?.size ?: 0),
+        "Ilumina" to (product.brightening?.size ?: 0),
+        "Protección UV" to (product.uvProtection?.size ?: 0),
+        "Promueve curación" to (product.woundHealing?.size ?: 0),
+        "Anti-envejecimiento" to (product.antiAging?.size ?: 0)
     )
     effectsAndIngredients.forEach { (effect, ingredientCount) ->
-        EffectRow(effect = effect, ingredientCount = ingredientCount)
+        if (ingredientCount > 0 ){
+            EffectRow(effect = effect, ingredientCount = ingredientCount, product = product)
+        }
     }
 }
 
 @Composable
-fun EffectRow(effect: String, ingredientCount: Int) {
+fun EffectRow(effect: String, ingredientCount: Int, product: Product) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -201,56 +306,66 @@ fun EffectRow(effect: String, ingredientCount: Int) {
         Text(
             text = effect.capitalize(),
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            fontSize = 13.sp,
         )
         Text(
-            text = "$ingredientCount ingredients",
+            fontSize = 13.sp,
+            text = "$ingredientCount ingrediente(s)",
             color = Color.Gray
         )
-        IngredientsList(ingredientCount)
+        IngredientsList(effect, product)
     }
 }
 
 @Composable
 fun EffectIcon(effect: String) {
-    val icon: ImageVector = when (effect) {
-        "Acne Fighting" -> Icons.Default.AddCircle
-        "Brightening" -> Icons.Default.AddCircle
-        "UV Protection" -> Icons.Default.AddCircle
-        "Wound Healing" -> Icons.Default.AddCircle
-        "Anti Aging" -> Icons.Default.AddCircle
-        else -> Icons.Default.AddCircle
+    val icon: Painter? = when (effect) {
+        "Combate acné" -> painterResource(id = R.drawable.acne_fighting)
+        "Ilumina" -> painterResource(id = R.drawable.brightening)
+        "Protección UV" -> painterResource(id = R.drawable.uv_protection)
+        "Promueve curación" -> painterResource(id = R.drawable.promotes_wound_healing)
+        "Anti-envejecimiento" -> painterResource(id = R.drawable.anti_aging)
+        else -> null
     }
-    Icon(
-        imageVector = icon,
-        contentDescription = "Effect Icon",
-        tint = MaterialTheme.colorScheme.onPrimary, // Change the color as needed
-        modifier = Modifier.padding(end = 8.dp)
-    )
+    if (icon != null) {
+        Icon(
+            painter = icon,
+            contentDescription = "Effect Icon",
+            tint = Color.Unspecified,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+    }
 }
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
-fun IngredientsList(ingredientCount: Int) {
-    val ingredients = listOf(
-        "Ingredient 1",
-        "Ingredient 2",
-        "Ingredient 3",
-        "Ingredient 4"
-    )
-    Column {
-        ingredients.take(ingredientCount.coerceAtMost(4)).forEach { ingredient ->
-            IngredientRow(ingredient)
-        }
+fun IngredientsList(effect: String, product: Product) {
+    val ingredients: List<String>? = when (effect) {
+        "Combate acné" -> product.acneFighting
+        "Ilumina" -> product.brightening
+        "Protección UV" -> product.uvProtection
+        "Promueve curación" -> product.woundHealing
+        "Anti-envejecimiento" -> product.antiAging
+        else -> listOf<String>()
+    }
+
+    val elements = ingredients?.size ?: 0
+        Column {
+            ingredients?.take(elements.coerceAtMost(4))?.forEach { ingredient ->
+                IngredientRow(ingredient)
+            }
     }
 }
 
 @Composable
 fun IngredientRow(ingredient: String) {
     Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
             .size(100.dp, 40.dp)
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(Color.LightGray)
     ) {
         Text(
             text = ingredient,
@@ -265,33 +380,48 @@ fun IngredientRow(ingredient: String) {
 }
 
 @Composable
-fun ThirdContainer() {
+fun ThirdContainer(product: Product) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Ingredientes relacionados con los tipos de piel ",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            //modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.help),
+            tint = Color.Unspecified,
+            contentDescription = "Help",
+            modifier = Modifier
+                .size(15.dp)
+                .clickable {
+                }
+        )
+    }
+    Spacer(modifier = Modifier.height(5.dp))
     Text(
-        text = "Ingredients Related to Skin Types",
-        fontSize = 18.sp,
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
-    Text(
-        text = "Click on the arrow next to the Skin Type! Green = Good & Red = Bad",
+        text = "Verde = Bueno & Rojo = Malo",
         color = Color.Gray,
-        fontSize = 14.sp,
-        modifier = Modifier.padding(bottom = 16.dp)
+        fontSize = 10.sp,
+        modifier = Modifier.padding(bottom = 10.dp)
     )
     val skinTypes = listOf(
-        "Dry Skin" to 2 to 1,
-        "Oily/Acne-Prone Skin" to 3 to 2,
-        "Sensitive Skin" to 1 to 3
+        "Piel Seca" to product.goodDrySkin to product.badDrySkin,
+        "Piel Grasa/Tendencia acné" to product.goodOilSkin to product.badOilSkin,
+        "Piel Sensible" to product.goodSensitiveSkin to product.badSensitiveSkin
     )
 
-    skinTypes.forEach { (skinTypePair, count) ->
-        val (skinType, values) = skinTypePair
-        val (goodCount, badCount) = values
+    for ((pair1, pair2) in skinTypes) {
+        val (skinType, goodCountN) = pair1
+        val goodCount = goodCountN ?: 0
+        val (secondPair, badCountN) = pair2 ?: 0
+        val badCount = badCountN ?: 0
+
         SkinTypeRow(skinType = skinType, goodCount = goodCount, badCount = badCount)
         Spacer(modifier = Modifier.height(8.dp))
     }
-
-
 }
 
 @Composable
@@ -309,8 +439,9 @@ fun SkinTypeRow(skinType: String, goodCount: Int, badCount: Int) {
             modifier = Modifier.padding(end = 8.dp)
         )
         Text(
+            fontSize = 13.sp,
             text = skinType,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f)
         )
         RectangleIndicator(goodCount, badCount)
@@ -326,49 +457,290 @@ fun RectangleIndicator(goodCount: Int, badCount: Int) {
     Box(
         modifier = Modifier
             .size(100.dp, 20.dp)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(Color.LightGray, MaterialTheme.colorScheme.onSurface),
-                    startX = 0f,
-                    endX = 100f
-                )
-            )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Transparent)
+                .background(Color.LightGray)
         )
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(goodPercentage.dp)
-                .background(Color.Green)
+                .background(Color(0xFF30b0c7))
         )
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(badPercentage.dp)
-                .background(Color.Red)
+                .background(Color(0xFFF18283))
         )
+
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "$goodCount",
-                color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                modifier = Modifier.padding(end = 4.dp)
+            if (goodCount > 0){
+                Text(
+                    text = "$goodCount",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+            }
+
+            if (badCount > 0){
+                Text(
+                    text = "$badCount",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
+
+            if (badCount == 0 && goodCount == 0){
+                Text(
+                    text = "Ninguno",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FourthContainer(product: Product) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Desglose de la seguridad de los ingredientes (EWG Calificación Seguridad) ",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.help),
+            tint = Color.Unspecified,
+            contentDescription = "Help",
+            modifier = Modifier
+                .size(15.dp)
+                .clickable {
+                }
+        )
+    }
+
+    Row(
+        verticalAlignment = Alignment.Bottom,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        ColorSquare(Color(0xFF30b0c7), " Riesgo\n Bajo")
+        ColorSquare(Color(0xFFF3AE75), " Riesgo\n Moderado")
+        ColorSquare(Color(0xFFF18283), " Riesgo\n Alto")
+        ColorSquare(Color(0xFFB8B7B7), " Desconocido")
+    }
+
+    MultiColorRectBrush(product)
+}
+
+@Composable
+fun ColorSquare(color: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(end = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(color)
+        )
+        Text(text = label, maxLines = 2, minLines = 2)
+    }
+}
+
+@Composable
+fun MultiColorRectBrush(product: Product) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp)
+            .background(Color.White)
+    ) {
+
+        var count1 = 0
+        var count2 = 0
+        var count3 = 0
+        var count4 = 0
+        var total = product.ingredients.size
+
+        if (total > 0) {
+            for (ingredient in product.ingredients) {
+                if (ingredient.ewg == 1 || ingredient.ewg == 2) {
+                    count1++
+                } else if (ingredient.ewg == 3 || ingredient.ewg == 4 || ingredient.ewg == 5 || ingredient.ewg == 6) {
+                    count2++
+                } else if (ingredient.ewg == 7 || ingredient.ewg == 8 || ingredient.ewg == 9 || ingredient.ewg == 10) {
+                    count3++
+                } else {
+                    count4++
+                }
+            }
+        }
+
+        if (total == 0){total = 1}
+
+        val color1Percentage = ((count1)/total).toFloat()
+        val color2Percentage = ((count2)/total).toFloat()
+        val color3Percentage = ((count3)/total).toFloat()
+        val color4Percentage = ((count4)/total).toFloat()
+
+        Box() {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(color1Percentage)
+                    .background(Color(0xFF98E0DD))
             )
-            Text(
-                text = "$badCount",
-                color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(color2Percentage)
+                    .background(Color(0xFFF3AE75))
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(color3Percentage)
+                    .background(Color(0xFFF18283))
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(color4Percentage)
+                    .background(Color(0xFFB8B7B7))
             )
         }
+    }
+}
+
+@Composable
+fun IngredientTable(ingredients: List<Ingredient>) {
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Text(text = " EWG  ", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+            Text(text = " CIR  ", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+            Text(text = "Ingrediente y función cosmética", Modifier.weight(6f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+            Text(text = "Notas  ", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+        }
+
+        ingredients.forEach { ingredient ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.LightGray,
+                    )
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.05f)
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = ingredient.ewg?.toString() ?: "",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(0.1f)
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = ingredient.cir?.toString() ?: " ",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(0.35f)
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = ingredient.name,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Justify,
+                            fontSize = 12.sp,
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(0.15f)
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column {
+                        for (effect in ingredient.notableEffects){
+                            IconWithDescription(effect.toString())
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun IconWithDescription(description: String)
+{
+    val value: Pair<String, Painter>? = when (description) {
+        "ACNE_FIGHTING" -> Pair("Combate el acné", painterResource(id = R.drawable.acne_fighting))
+        "BRIGHTENING" -> Pair("Iluminador", painterResource(id = R.drawable.brightening))
+        "UV_PROTECTION" -> Pair("Protección UV", painterResource(id = R.drawable.uv_protection))
+        "WOUND_HEALING" -> Pair("Promueve curación", painterResource(id = R.drawable.promotes_wound_healing))
+        "ANTI_AGING" -> Pair("Anti-envejecimiento", painterResource(id = R.drawable.anti_aging))
+        else -> {null}
+    }
+
+
+    if (value != null) {
+        Icon(
+            painter = value.second,
+            contentDescription = null,
+            modifier = Modifier.size(15.dp),
+            tint = Color.Unspecified
+        )
+
+        Text(
+            text = value.first,
+            modifier = Modifier.padding(top = 1.dp),
+            maxLines = 2,
+            fontSize = 8.sp,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

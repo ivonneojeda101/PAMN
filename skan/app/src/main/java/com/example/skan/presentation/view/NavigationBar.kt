@@ -1,6 +1,8 @@
 package com.example.skan.presentation.view
 
-import android.util.Log
+import android.Manifest.permission.INTERNET
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,14 +12,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import com.example.skan.R
 import com.example.skan.presentation.viewModel.NavigationBarViewModel
+import androidx.compose.material.MaterialTheme as AppTheme
 
 data class BottomNavigationItem(
     val selectedIcon: Painter,
@@ -28,7 +34,18 @@ data class BottomNavigationItem(
     @Preview
     @Composable
     fun NavigationBar() {
+        val applicationContext = LocalContext.current
+        val result = ContextCompat.checkSelfPermission(applicationContext, INTERNET)
         var viewModel: NavigationBarViewModel = NavigationBarViewModel()
+        var PERMISSION_REQUEST_CODE = 200;
+        if (result == PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(
+                applicationContext as Activity,
+                arrayOf<String>(INTERNET),
+                PERMISSION_REQUEST_CODE
+            )
+
+        }
         Box(
             Modifier
                 .fillMaxSize()
@@ -58,19 +75,6 @@ data class BottomNavigationItem(
             floatingActionButtonPosition = FabPosition.Center,
         )
     }
-
-    @Composable
-    fun FAB(modifier: Modifier) {
-        val context = LocalContext.current
-        FloatingActionButton(
-            containerColor = MaterialTheme.colorScheme.primary,
-            onClick = {
-                Toast.makeText(context, "Testing", Toast.LENGTH_SHORT).show()
-            }) {
-            Text(text = "Camara")
-        }
-    }
-
     @Composable
     fun NavigationBarItems(modifier: Modifier, currentScreen: Int, switchToScreen: (Int) -> Unit) {
 
@@ -86,8 +90,8 @@ data class BottomNavigationItem(
                 title = "Recursos",
             ),
             BottomNavigationItem(
-                selectedIcon = painterResource(id = R.drawable.camera),
-                unselectedIcon = painterResource(id = R.drawable.camera2),
+                selectedIcon = painterResource(id = R.drawable.scanner),
+                unselectedIcon = painterResource(id = R.drawable.scanner),
                 title = "Cámara",
             ),
             BottomNavigationItem(
@@ -112,7 +116,8 @@ data class BottomNavigationItem(
                         Icon(
                             painter = item.selectedIcon as Painter,
                             contentDescription = item.title,
-                            modifier = Modifier.size(48.dp)
+                            modifier = Modifier.size(48.dp),
+                            tint = Color.Unspecified
                         )
                     }
                 )

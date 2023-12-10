@@ -1,28 +1,35 @@
 package com.example.skan.domain.useCases
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.skan.data.dataManager.ProductProvider
+import com.example.skan.data.dataManager.SharedPreferencesManager
 import com.example.skan.data.interfaces.ProductRepository
 import com.example.skan.data.repositories.ProductRepositoryImpl
 import com.example.skan.domain.entities.Product
+import com.google.gson.Gson
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
 class ProcessBarCode {
 
     private val productRepository: ProductRepository = ProductRepositoryImpl()
 
-    suspend operator fun invoke(image: Bitmap): Boolean {
+    suspend operator fun invoke(image: Bitmap, context: Context): Boolean {
         var finalBarCode = scanBarcodes(image)
         if (finalBarCode != null) {
             val product = getProduct(finalBarCode)
-            if (!product.isEmpty()) {ProductProvider.product = product}
-            return !product.isEmpty()
+            if (!product.isEmpty()) {
+                val sharedPreferencesManager = SharedPreferencesManager(context)
+                val gson = Gson()
+                val json = gson.toJson(product)
+                sharedPreferencesManager.saveData("Product", json)
+                return true
+            }
+            return false
         }
         else {
             return false

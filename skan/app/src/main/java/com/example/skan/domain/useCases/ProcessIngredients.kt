@@ -1,31 +1,38 @@
 package com.example.skan.domain.useCases
 
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.skan.data.dataManager.ProductProvider
+import com.example.skan.data.dataManager.SharedPreferencesManager
 import com.example.skan.data.interfaces.ProductRepository
 import com.example.skan.data.repositories.ProductRepositoryImpl
-import com.example.skan.domain.entities.Ingredient
 import com.example.skan.domain.entities.Product
+import com.google.gson.Gson
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.tasks.await
 
+
 class ProcessIngredients {
 
     private val productRepository: ProductRepository = ProductRepositoryImpl()
-
-    suspend operator fun invoke(image: Bitmap): Boolean {
+    suspend operator fun invoke(image: Bitmap, context: Context): Boolean {
         var finalText = recognizeText(image)
         if (finalText != null){
-            val ingredients = getIngredients(finalText)
-            if (ingredients.isNotEmpty()){
-                val product = analyzeProduct(ingredients)
-                if (!product.isEmpty()) { ProductProvider.product = product}
-                return !product.isEmpty()
+            val product = analyzeIngredients(finalText)
+            if (!product.isEmpty()) {
+                val sharedPreferencesManager = SharedPreferencesManager(context)
+                val gson = Gson()
+                val json = gson.toJson(product)
+                sharedPreferencesManager.saveData("Product", json)
+                return true
             }
-            return false
+            else {
+                return false
+            }
         }
         else{
             return false
@@ -47,11 +54,7 @@ class ProcessIngredients {
         return textResult
     }
 
-    private suspend fun getIngredients(text: String): List<Ingredient>{
-        return productRepository.getIngredients(text)
-    }
-
-    private suspend fun analyzeProduct(ingredients: List<Ingredient>): Product {
-        return productRepository.analyzeProduct(ingredients)
+    private suspend fun analyzeIngredients(text: String): Product{
+        return productRepository.analyzeIngredients(text)
     }
 }

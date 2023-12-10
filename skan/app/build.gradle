@@ -80,6 +80,7 @@ dependencies {
     implementation("androidx.camera:camera-extensions:$cameraxVersion")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.4.1'
     implementation 'org.tensorflow:tensorflow-lite-task-vision-play-services:0.4.2'
+
     // Barcode model
     implementation 'com.google.mlkit:barcode-scanning:17.2.0'
     // Object detection and tracking features

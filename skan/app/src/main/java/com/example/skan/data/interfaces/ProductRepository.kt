@@ -9,7 +9,5 @@ interface ProductRepository {
 
     suspend fun getProduct(barcode: String): Product
 
-    suspend fun getIngredients(text: String): List<Ingredient>
-
-    suspend fun analyzeProduct(ingredients: List<Ingredient>): Product
+    suspend fun analyzeIngredients(text: String): Product
 }

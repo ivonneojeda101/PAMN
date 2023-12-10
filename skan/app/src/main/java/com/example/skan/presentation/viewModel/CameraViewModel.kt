@@ -27,7 +27,7 @@ class CameraViewModel(private val controller: LifecycleCameraController): ViewMo
 
     fun takePhoto(context: Context, option: Int) {
         val coroutineScope = viewModelScope
-        _isLoading.value = true
+        _isLoading.postValue(true)
 
         controller.takePicture(
             ContextCompat.getMainExecutor(context),
@@ -39,8 +39,8 @@ class CameraViewModel(private val controller: LifecycleCameraController): ViewMo
                         image.toBitmap(), 0, 0, image.width, image.height, matrix, true)
 
                     when (option) {
-                        1 -> coroutineScope.launch {updateState(processBarCode(rotatedBitmap)!!) }
-                        2 -> coroutineScope.launch {updateState(processIngredients(rotatedBitmap)!!)}
+                        1 -> coroutineScope.launch {updateState(processBarCode(rotatedBitmap, context)!!) }
+                        2 -> coroutineScope.launch {updateState(processIngredients(rotatedBitmap, context)!!)}
                     }
                     //image.close()
                 }
