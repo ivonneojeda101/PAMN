@@ -36,7 +36,7 @@ class ProcessBarCode {
         }
     }
 
-    private suspend fun scanBarcodes(image: Bitmap): String? {
+    public suspend fun scanBarcodes(image: Bitmap): String? {
         var barCodeString: String? = null
         val inputImage = InputImage.fromBitmap(image, 0)
         val options = BarcodeScannerOptions.Builder()
@@ -49,7 +49,7 @@ class ProcessBarCode {
         val scanner = BarcodeScanning.getClient()
         val result = scanner.process(inputImage)
             .addOnFailureListener {e ->
-                Log.e("LibraryML", "Could not find barcode: ", e)
+                Log.println(Log.ASSERT, "Could not find barcode: ", e.toString())
             }.await()
         if (result.size>0 ){
             barCodeString = result.get(0).rawValue.toString()

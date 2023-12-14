@@ -16,4 +16,8 @@ class SharedPreferencesManager(private val context: Context) {
     fun loadData(key: String): String {
         return sharedPreferences.getString(key, "") ?: ""
     }
+
+    fun deleteData(key: String) {
+        sharedPreferences.edit().remove(key).apply()
+    }
 }

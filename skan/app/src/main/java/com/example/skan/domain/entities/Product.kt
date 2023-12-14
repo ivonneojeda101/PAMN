@@ -3,11 +3,14 @@ package com.example.skan.domain.entities
 import com.google.gson.annotations.SerializedName
 
 data class Product (
-    val id: Int? = 0,
+    @SerializedName("idProduct")
+    var id: Int? = null,
     @SerializedName("productName")
-    val name: String? = "",
-    val barcode: String? = "",
-    val description: String? = "",
+    var name: String? = null,
+    @SerializedName("barcode")
+    var barcode: String? = null,
+    @SerializedName("description")
+    var description: String? = null,
     @SerializedName("parabenFree")
     val parabenFree: Boolean? = null,
     @SerializedName("sulfateFree")

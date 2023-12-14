@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.skan.presentation.view.JetComposeApp
 import com.example.skan.presentation.view.NavigationBar
 import com.example.skan.presentation.viewModel.MainViewModel
 import com.example.skan.ui.theme.SkanTheme
@@ -19,6 +20,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkPermissions()
+
         setContent {
             SkanTheme {
                 // A surface container using the 'background' color from the theme
@@ -26,7 +28,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    NavigationBar()
+                    if (!viewModel.getWelcomeAsShown(this)) {
+                        JetComposeApp("welcome")
+                    } else {
+                        NavigationBar()
+                    }
                 }
             }
         }
@@ -37,5 +43,4 @@ class MainActivity : ComponentActivity() {
             viewModel.requestPermissions(this)
         }
     }
-
 }

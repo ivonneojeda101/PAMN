@@ -2,8 +2,9 @@ package com.example.skan.presentation.view
 
 import android.Manifest.permission.INTERNET
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -16,47 +17,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
+import androidx.navigation.compose.rememberNavController
 import com.example.skan.R
 import com.example.skan.presentation.viewModel.NavigationBarViewModel
-import androidx.compose.material.MaterialTheme as AppTheme
 
 data class BottomNavigationItem(
     val selectedIcon: Painter,
     val unselectedIcon: Painter,
     val title: String,
 )
-
-    @Preview
     @Composable
     fun NavigationBar() {
         val applicationContext = LocalContext.current
         val result = ContextCompat.checkSelfPermission(applicationContext, INTERNET)
         var viewModel: NavigationBarViewModel = NavigationBarViewModel()
         var PERMISSION_REQUEST_CODE = 200;
+        val navController = rememberNavController()
         if (result == PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(
                 applicationContext as Activity,
                 arrayOf<String>(INTERNET),
                 PERMISSION_REQUEST_CODE
             )
-
         }
         Box(
             Modifier
                 .fillMaxSize()
         ) {
-            ViewContainer(Modifier, viewModel)
+            ViewContainer(modifier = Modifier, viewModel, applicationContext)
         }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun ViewContainer(modifier: Modifier, viewModel: NavigationBarViewModel) {
+    fun ViewContainer(
+        modifier: Modifier = Modifier,
+        viewModel: NavigationBarViewModel,
+        context: Context
+    ) {
         val currentScreen: Int by viewModel.currentScreen.observeAsState(initial = 0)
         Scaffold(
             content = {
@@ -65,7 +67,11 @@ data class BottomNavigationItem(
                     1 -> ResourceScreen()
                     2 -> CameraScreen()
                     3 -> SearchScreen()
-                    4 -> ProfileScreen()
+                    4 -> { if (viewModel.getProfile(context)){ProfileScreen()}
+                        else{
+                            val intent = Intent(context, Registration::class.java)
+                            context.startActivity(intent)
+                        }}
                     else -> { HomeScreen()}
                 }
                       },

@@ -1,5 +1,7 @@
 package com.example.skan.presentation.view
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +16,8 @@ import androidx.compose.material.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,52 +25,89 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.skan.R
+import com.example.skan.domain.entities.User
+import com.example.skan.presentation.viewModel.ProfileViewModel
 
 
 @Composable
 fun ProfileScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(brush = Brush.verticalGradient(
-                colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)), // Specify your gradient colors here
-                startY = 0f,
-                endY = 2000f // Adjust the end position as needed
-            ))
-    ) {
-        Row(){
-            mainHeader()
-        }
+    val viewModel: ProfileViewModel = ProfileViewModel()
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "profile") {
+        composable("profile") { MainContainer(viewModel, navController) }
+        composable("favorites") { FavoriteScreen(navController)}
+    }
+}
 
+@Composable
+fun MainContainer(viewModel: ProfileViewModel, navController: NavHostController) {
+    val applicationContext = LocalContext.current
+    val findUser: Boolean by viewModel.findUser.observeAsState(initial = true)
+    val user: User by viewModel.user.observeAsState(initial = User())
+
+    viewModel.getData(applicationContext)
+    if (!findUser) {
+        val intent = Intent(applicationContext, Registration::class.java)
+        applicationContext.startActivity(intent)
+    }
+    else {
         Box(
             modifier = Modifier
-                .padding(top = 120.dp)
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.White.copy(alpha = 0.3f))
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)),
+                        startY = 0f,
+                        endY = 2000f
+                    )
+                )
         ) {
-            Text(
-                text = "Información Personal",
-                color = MaterialTheme.colors.secondary,
-                modifier = Modifier.align(Alignment.Center),
-                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            )
-        }
+            Row(){
+                mainHeader()
+            }
 
-        Row(){
-            Components()
+            Box(
+                modifier = Modifier
+                    .padding(top = 120.dp)
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .background(Color.White.copy(alpha = 0.3f))
+            ) {
+                Text(
+                    text = "Información Personal",
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.Center),
+                    style = TextStyle(fontSize = 25.sp, fontFamily = FontFamily(Font(R.font.literata_bold),))
+                )
+            }
+
+            Row(){
+                Components(user, viewModel, applicationContext, navController)
+            }
         }
     }
 }
 
 @Composable
-fun Components() {
+fun Components(
+    user: User,
+    viewModel: ProfileViewModel,
+    context: Context,
+    navController: NavHostController
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -102,11 +143,11 @@ fun Components() {
                     .padding(start = 16.dp)
                     .weight(1f)
             ) {
-                Text(text = "John Doe", color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text(text = "johndoe@example.com", color = Color.Black, modifier = Modifier.padding(vertical = 4.dp))
+                Text(text = user.name, color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = user.email, color = Color.Black, modifier = Modifier.padding(vertical = 4.dp))
                 Text(
-                    text = "Verificado",
-                    color = Color.Blue,
+                    text = user.status,
+                    color = Color.Black,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Button(
@@ -147,16 +188,20 @@ fun Components() {
                             .fillMaxWidth()
                             .height(50.dp)
                             .background(backgroundColor)
-                            .clickable { /* Handle menu item click */ }
+                            .clickable {
+                                when (index) {
+                                    0 -> navController.navigate("favorites")
+                                    3 -> viewModel.logout(context)
+                                    else -> {}
+                                }
+                            }
                     ) {
-                        // Replace with icon
                         Icon(
                             painter = painterResource(id = items[index]) as Painter,
                             contentDescription = "Favorite Icon",
                             modifier = Modifier
                                 .size(50.dp)
-                                .padding(start = 16.dp)
-                                .clickable {  },
+                                .padding(start = 16.dp),
                             tint = Color.Unspecified,
                         )
                         Text(text = "   $item" , modifier = Modifier.weight(1f))

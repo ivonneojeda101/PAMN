@@ -21,7 +21,7 @@ class ProcessIngredients {
     private val productRepository: ProductRepository = ProductRepositoryImpl()
     suspend operator fun invoke(image: Bitmap, context: Context): Boolean {
         var finalText = recognizeText(image)
-        if (finalText != null){
+        if (finalText != null && finalText.length > 0){
             val product = analyzeIngredients(finalText)
             if (!product.isEmpty()) {
                 val sharedPreferencesManager = SharedPreferencesManager(context)
@@ -49,7 +49,7 @@ class ProcessIngredients {
                 Log.println(Log.ASSERT, "Text", it.text)
             }
             .addOnFailureListener { e ->
-                Log.e("LibraryML", "Could not find Text: ", e)
+                Log.println(Log.ASSERT, "Could not find Text:", e.toString())
             }.await()
         return textResult
     }

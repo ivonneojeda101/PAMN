@@ -1,25 +1,47 @@
 package com.example.skan.presentation.viewModel
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.skan.domain.entities.Product
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.skan.domain.entities.Favorite
+import com.example.skan.domain.useCases.GetProduct
+import com.example.skan.domain.useCases.SearchKeyword
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class SearchViewModel {
+class SearchViewModel: ViewModel() {
     private val _searchText = MutableLiveData<String>()
     val searchText: LiveData<String> = _searchText
-    private val _listProducts = MutableLiveData<List<Product>>()
-    val listProducts: LiveData<List<Product>> = _listProducts
-
+    private val _listProducts = MutableLiveData<List<Favorite>>()
+    val listProducts: LiveData<List<Favorite>> = _listProducts
+    private var searchKeyword = SearchKeyword()
+    private val _showProduct = MutableStateFlow<Boolean>(false)
+    val showProduct: StateFlow<Boolean> = _showProduct.asStateFlow()
+    private val getProduct = GetProduct()
     fun updateSearchText(text: String){
         _searchText.value = text
     }
 
-    fun searchProduct(text: String){
-        val product1 = Product(name = "N Body Lotion", description = "Reafirma visiblemente la piel y mejora su elasticidad en tan sólo 10 días con Q10 PLUS VITAMIN C Loción Corporal Reafirmante")
-        val product2 = Product(name = "N Serum", description = "Piel Radiante Serum Antimanchas está formulado con Aceite de Pétalo de Rosa y Lumicinol, para reducir los principales signos del envejecimiento de la piel y corregir visiblemente las manchas" )
-        var product3 = Product(name = "N Crema de Noche", description = "Crema de Noche con coenzima Q10 100% IDÉNTICA a la de la piel reduce arrugas y líneas de expresión en 4 semanas")
-        _listProducts.value = listOf(product1, product2, product3)
-
+    fun searchProduct(keyword: String){
+        viewModelScope.launch {
+            val result = searchKeyword(keyword)
+            _listProducts.postValue(result)
+        }
     }
 
+    fun showProduct(idProduct: Int, context: Context){
+        viewModelScope.launch {
+            val result = getProduct(idProduct, context)
+            if (result) {
+                delay(250)
+                _showProduct.value = true
+            }
+        }
+    }
 }

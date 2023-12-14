@@ -102,7 +102,6 @@ fun CameraScreen() {
 
 @Composable
 fun photoButton(viewModel: CameraViewModel, context: Context, foundBarCode: Boolean) {
-    //TODO Pendiente definir el comportamiento cuando no hay resultados de ningun tipo
     IconButton(
         modifier = Modifier
             .wrapContentSize(Alignment.Center)
@@ -154,7 +153,7 @@ fun CircularLoadingIndicator() {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
             strokeWidth = 4.dp,
-            color =  MaterialTheme.colorScheme.background// Change the color as needed
+            color =  MaterialTheme.colorScheme.background
         )
     }
 }

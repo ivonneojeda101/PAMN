@@ -22,8 +22,8 @@ class CameraViewModel(private val controller: LifecycleCameraController): ViewMo
     val isLoading: LiveData<Boolean> = _isLoading
     private val _productIsReady = MutableLiveData<Boolean>()
     val productIsReady: LiveData<Boolean> = _productIsReady
-    var processBarCode = ProcessBarCode()
-    var processIngredients = ProcessIngredients()
+    private var processBarCode = ProcessBarCode()
+    private var processIngredients = ProcessIngredients()
 
     fun takePhoto(context: Context, option: Int) {
         val coroutineScope = viewModelScope
@@ -37,12 +37,10 @@ class CameraViewModel(private val controller: LifecycleCameraController): ViewMo
                     val matrix = Matrix().apply { postRotate(image.imageInfo.rotationDegrees.toFloat()) }
                     val rotatedBitmap = Bitmap.createBitmap(
                         image.toBitmap(), 0, 0, image.width, image.height, matrix, true)
-
                     when (option) {
-                        1 -> coroutineScope.launch {updateState(processBarCode(rotatedBitmap, context)!!) }
-                        2 -> coroutineScope.launch {updateState(processIngredients(rotatedBitmap, context)!!)}
+                        1 -> coroutineScope.launch {updateState(processBarCode(rotatedBitmap, context)!!, image) }
+                        2 -> coroutineScope.launch {updateState(processIngredients(rotatedBitmap, context)!!, image)}
                     }
-                    //image.close()
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -52,13 +50,14 @@ class CameraViewModel(private val controller: LifecycleCameraController): ViewMo
                     }
                     coroutineScope.coroutineContext.cancel()
                     super.onError(exception)
-                    Log.e("Camera", "Couldn't take photo: ", exception)
+                    Log.println(Log.ASSERT, "Couldn't take photo: ", exception.toString())
                 }
             }
         )
     }
 
-    private suspend fun updateState(result: Boolean){
+    private suspend fun updateState(result: Boolean, image: ImageProxy){
+        image.close()
         _foundBarCode.postValue(result)
         if (result) {_productIsReady.postValue(true)}
         _isLoading.postValue(false)

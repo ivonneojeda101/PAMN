@@ -3,6 +3,7 @@ package com.example.skan.presentation.view
 import android.annotation.SuppressLint
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -46,19 +47,21 @@ fun ScrollableGrayBackground() {
     val viewModel: ProductDetailsViewModel = ProductDetailsViewModel()
     val product: Product by viewModel.product.observeAsState(initial = Product())
     val saveProduct: Boolean by viewModel.saveProduct.observeAsState(initial = false)
+    val isFavorite: Boolean by viewModel.isFavorite.observeAsState(initial = false)
     val applicationContext = LocalContext.current
     viewModel.getData(applicationContext)
+
     if (saveProduct){
-        SaveScreen()
+        SaveScreen(product)
     }
     else {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)), // Specify your gradient colors here
+                    colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)),
                     startY = 0f,
-                    endY = 2000f // Adjust the end position as needed
+                    endY = 2000f
                 ))
         ) {
             Row(){
@@ -91,33 +94,38 @@ fun ScrollableGrayBackground() {
                             style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
+                        if (product.id != null && product.id!! > 0) {
+                            ProductCard(product.name!!, product.description!!)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End,
                         ) {
-                           // if (product.id!! > 0){
-                                Icon(
-                                    painter = painterResource(id = R.drawable.favorite),
-                                    contentDescription = "Favorite Icon",
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .padding(2.dp)
-                                        .clickable {  },
-                                    tint = Color.Unspecified,
-                                )
+                            if (product.id != null && product.id!! > 0) {
+                                if (!isFavorite){
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.favorite),
+                                        contentDescription = "Favorite Icon",
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .padding(2.dp)
+                                            .clickable { viewModel.addFavorite(applicationContext)},
+                                        tint = Color.Unspecified,
+                                    )
+                                }
                                 Icon(
                                     painter = painterResource(id = R.drawable.review),
-                                    contentDescription = "Favorite Icon",
+                                    contentDescription = "Review Icon",
                                     modifier = Modifier
                                         .size(30.dp)
                                         .padding(2.dp)
                                         .clickable {  },
                                     tint = Color.Unspecified,
                                 )
-                            //}
+                            }
 
-
-                            //if (product.id!! == 0){
+                            if (product.id != null && product.id== 0){
                                 Icon(
                                     painter = painterResource(id = R.drawable.save),
                                     contentDescription = "Save Icon",
@@ -126,7 +134,7 @@ fun ScrollableGrayBackground() {
                                         .clickable { viewModel.updateSave(true) },
                                     tint = AppTheme.colors.primary,
                                 )
-                            //}
+                            }
                         }
                         FirstContainer(product)
                         Spacer(modifier = Modifier.height(16.dp))
@@ -334,6 +342,7 @@ fun EffectIcon(effect: String) {
             contentDescription = "Effect Icon",
             tint = Color.Unspecified,
             modifier = Modifier.padding(end = 8.dp)
+                .size(35.dp)
         )
     }
 }
@@ -703,7 +712,7 @@ fun IngredientTable(ingredients: List<Ingredient>) {
                         .weight(0.15f)
                         .padding(horizontal = 4.dp)
                 ) {
-                    Column {
+                    Column (horizontalAlignment = Alignment.CenterHorizontally,){
                         for (effect in ingredient.notableEffects){
                             IconWithDescription(effect.toString())
                         }
@@ -741,6 +750,44 @@ fun IconWithDescription(description: String)
             maxLines = 2,
             fontSize = 8.sp,
             overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun ProductCard(name: String, description: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.5f))
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.facemask),
+                contentDescription = "Product Image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(0.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = name,
+            style = TextStyle(fontWeight = FontWeight.Bold),
+            fontSize = 18.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = description,
+            style = TextStyle(color = Color.Gray),
+            fontSize = 14.sp
         )
     }
 }
