@@ -19,4 +19,10 @@ class FavoriteViewModel: ViewModel() {
             _listFavorites.value = result
         }
     }
+
+    fun deleteFavorite(idProduct: Int, context: Context){
+        val managerFavorite: ManageFavorites = ManageFavorites(context)
+        managerFavorite.removeFavorite(idProduct)
+        getFavorites(context)
+    }
 }

@@ -3,6 +3,8 @@ package com.example.skan.presentation.view
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -19,19 +21,21 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.skan.R
 import com.example.skan.domain.entities.Favorite
-import com.example.skan.presentation.viewModel.FavoriteViewModel
+import com.example.skan.domain.entities.Review
+import com.example.skan.presentation.viewModel.ReviewViewModel
 
 @Composable
-fun FavoriteScreen(navController: NavHostController) {
+fun ReviewScreen(navController: NavHostController) {
     val applicationContext = LocalContext.current
-    val viewModel: FavoriteViewModel = FavoriteViewModel()
-    val listFavorites: List<Favorite> by viewModel.listFavorites.observeAsState(initial = listOf())
-    viewModel.getFavorites(applicationContext)
+    val viewModel = ReviewViewModel()
+    val listReviews: List<Review> by viewModel.listReviews.observeAsState(initial = listOf())
+    viewModel.getData(applicationContext)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -59,7 +63,7 @@ fun FavoriteScreen(navController: NavHostController) {
                 .background(Color.White.copy(alpha = 0.3f))
         ) {
             Text(
-                text = "Mis Favoritos",
+                text = "Mis Reseñas",
                 color = Color.Black,
                 modifier = Modifier.align(Alignment.Center),
                 style = TextStyle(fontSize = 25.sp, fontFamily = FontFamily(Font(R.font.literata_bold),))
@@ -99,9 +103,9 @@ fun FavoriteScreen(navController: NavHostController) {
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
-                    listFavorites.forEach { result ->
-                        ResultFavorite(result) { selectedResult ->
-                            viewModel.deleteFavorite(selectedResult.id, applicationContext)
+                    listReviews.forEach { result ->
+                        ResultReview(result) { selectedResult ->
+                            viewModel.deleteReview(selectedResult.id, applicationContext)
                         }
                     }
                 }
@@ -111,7 +115,7 @@ fun FavoriteScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ResultFavorite(favorite: Favorite, onItemClick: (Favorite) -> Unit) {
+fun ResultReview(review: Review, onItemClick: (Review) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -130,9 +134,17 @@ fun ResultFavorite(favorite: Favorite, onItemClick: (Favorite) -> Unit) {
         Column(
             modifier = Modifier
                 .padding(start = 8.dp, bottom = 8.dp)
-                .weight(1f)
+                .fillMaxWidth()
         ) {
-            favorite.name?.let {
+            review.productName?.let {
+                Text(
+                    text = it,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                )
+            }
+            Divider()
+           review.title?.let {
                 Text(
                     text = it,
                     fontWeight = FontWeight.Bold,
@@ -140,27 +152,41 @@ fun ResultFavorite(favorite: Favorite, onItemClick: (Favorite) -> Unit) {
                     color = Color.Gray
                 )
             }
-            favorite.description?.let {
+            review.description?.let {
                 Text(
                     text = it,
                     fontSize = 14.sp,
-                    color = Color.Black
+                    color = Color.Black,
+                    textAlign = TextAlign.Justify
                 )
             }
-        }
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(MaterialTheme.shapes.medium)
-                .clickable { onItemClick(favorite) }
-                .padding(4.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.delete),
-                contentDescription = null,
-                tint = Color.Unspecified
-            )
+            Row {
+                repeat(5) { index ->
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = if (index < review.rate!!) {
+                            Color(0xFFffd966)
+                        } else {
+                            Color.Unspecified
+                        },
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable { onItemClick(review) }
+                        .padding(4.dp),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.delete),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+            }
         }
     }
 }

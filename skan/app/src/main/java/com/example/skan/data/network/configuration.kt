@@ -9,4 +9,8 @@ object AppConfig {
     const val LOGIN_USER = "/Login"
     const val GET_ID_PRODUCT = "/getId"
     const val SEARCH_KEYWORD = "/search"
+    const val CREATE_REVIEW = "/Review"
+    const val GET_REVIEWS = "/Reviews"
+    const val GET_USER_REVIEWS = "/userReviews"
+    const val DELETE_REVIEW = "/deleteReview"
 }

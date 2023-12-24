@@ -8,6 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.skan.domain.entities.Product
 import com.example.skan.domain.entities.Product.Companion.emptyProduct
+import com.example.skan.domain.entities.Review
 import com.example.skan.domain.entities.User
 import com.example.skan.domain.entities.User.Companion.emptyUser
 import com.google.gson.Gson
@@ -177,6 +178,58 @@ class AnalyzerAPIService {
         catch (e: Exception) {
             print(e)
             return listOf()
+        }
+    }
+
+    suspend fun createReview(review: Review): Boolean {
+        try{
+            return withContext(Dispatchers.IO) {
+                val response = retrofit.create(AnalizerAPIClient::class.java).createReview(review)
+                response.isSuccessful
+            }
+        }
+        catch (e: Exception) {
+            print(e)
+            return false
+        }
+    }
+
+    suspend fun getReviews(idProduct: Int): List<Review> {
+        try{
+            return withContext(Dispatchers.IO) {
+                val response = retrofit.create(AnalizerAPIClient::class.java).getReviews(idProduct)
+                (response.body() ?: listOf())!!
+            }
+        }
+        catch (e: Exception) {
+            Log.println(Log.ASSERT, "SKINError", e.toString())
+            return emptyList()
+        }
+    }
+
+    suspend fun getUserReviews(idUser: Int): List<Review> {
+        try {
+            return withContext(Dispatchers.IO) {
+                val response = retrofit.create(AnalizerAPIClient::class.java).getUserReviews(idUser)
+                (response.body() ?: listOf())!!
+            }
+        }
+        catch (e: Exception) {
+            Log.println(Log.ASSERT, "SKINError", e.toString())
+            return listOf()
+        }
+    }
+
+    suspend fun deleteReview (idReview: Int): Boolean {
+        try {
+            return withContext(Dispatchers.IO) {
+                val response = retrofit.create(AnalizerAPIClient::class.java).deleteReview(idReview)
+                response.isSuccessful
+            }
+        }
+        catch (e: Exception) {
+            Log.println(Log.ASSERT, "SKINError", e.toString())
+            return false
         }
     }
 }

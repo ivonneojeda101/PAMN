@@ -5,11 +5,12 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,11 +29,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.component1
 import androidx.core.graphics.component2
 import com.example.skan.R
 import com.example.skan.domain.entities.Ingredient
 import com.example.skan.domain.entities.Product
+import com.example.skan.domain.entities.Review
 import com.example.skan.presentation.viewModel.ProductDetailsViewModel
 import androidx.compose.material.MaterialTheme as AppTheme
 
@@ -44,10 +47,13 @@ fun ProductDetails() {
 
 @Composable
 fun ScrollableGrayBackground() {
-    val viewModel: ProductDetailsViewModel = ProductDetailsViewModel()
+    val viewModel = ProductDetailsViewModel()
     val product: Product by viewModel.product.observeAsState(initial = Product())
+    val reviews: List<Review> by viewModel.reviews.observeAsState(initial = emptyList())
     val saveProduct: Boolean by viewModel.saveProduct.observeAsState(initial = false)
     val isFavorite: Boolean by viewModel.isFavorite.observeAsState(initial = false)
+    val showReviewScreen: Boolean by viewModel.showReviewScreen.observeAsState(initial = false)
+    val idUser: Int by viewModel.idUser.observeAsState(initial = 0)
     val applicationContext = LocalContext.current
     viewModel.getData(applicationContext)
 
@@ -58,11 +64,13 @@ fun ScrollableGrayBackground() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)),
-                    startY = 0f,
-                    endY = 2000f
-                ))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)),
+                        startY = 0f,
+                        endY = 2000f
+                    )
+                )
         ) {
             Row(){
                 mainHeader()
@@ -76,7 +84,10 @@ fun ScrollableGrayBackground() {
                             end = 18.dp,
                             bottom = 100.dp
                         )
-                        .background(Color.White.copy(alpha = 0.6f), shape = RoundedCornerShape(16.dp))
+                        .background(
+                            Color.White.copy(alpha = 0.6f),
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .fillMaxWidth()
                         .fillMaxHeight()
                 ) {
@@ -102,7 +113,7 @@ fun ScrollableGrayBackground() {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End,
                         ) {
-                            if (product.id != null && product.id!! > 0) {
+                            if (product.id != null && product.id!! > 0 && idUser>0) {
                                 if (!isFavorite){
                                     Icon(
                                         painter = painterResource(id = R.drawable.favorite),
@@ -110,7 +121,7 @@ fun ScrollableGrayBackground() {
                                         modifier = Modifier
                                             .size(30.dp)
                                             .padding(2.dp)
-                                            .clickable { viewModel.addFavorite(applicationContext)},
+                                            .clickable { viewModel.addFavorite(applicationContext) },
                                         tint = Color.Unspecified,
                                     )
                                 }
@@ -120,7 +131,9 @@ fun ScrollableGrayBackground() {
                                     modifier = Modifier
                                         .size(30.dp)
                                         .padding(2.dp)
-                                        .clickable {  },
+                                        .clickable {
+                                            viewModel.updateShowReviewScreen(true)
+                                        },
                                     tint = Color.Unspecified,
                                 )
                             }
@@ -148,6 +161,10 @@ fun ScrollableGrayBackground() {
                         Spacer(modifier = Modifier.height(16.dp))
                         IngredientTable(product.ingredients)
                         Spacer(modifier = Modifier.height(8.dp))
+                        ReviewList(reviews)
+                        if (showReviewScreen){
+                            ReviewScreen(viewModel)
+                        }
                     }
                 }
             }
@@ -341,7 +358,8 @@ fun EffectIcon(effect: String) {
             painter = icon,
             contentDescription = "Effect Icon",
             tint = Color.Unspecified,
-            modifier = Modifier.padding(end = 8.dp)
+            modifier = Modifier
+                .padding(end = 8.dp)
                 .size(35.dp)
         )
     }
@@ -791,3 +809,191 @@ fun ProductCard(name: String, description: String) {
         )
     }
 }
+
+@Composable
+fun ReviewScreen(viewModel: ProductDetailsViewModel) {
+    val reviewTitle: String by viewModel.reviewTitle.observeAsState(initial = "")
+    val reviewText: String by viewModel.reviewText.observeAsState(initial = "")
+    val selectedStars: Int by viewModel.selectedStars.observeAsState(initial = 0)
+
+    Dialog(
+        onDismissRequest = { viewModel.updateShowReviewScreen(false)}
+    ) {
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color(0xFF6EC7D7), Color(0xFFAEE2FA), Color(0xFFEAF7F9)),
+                    )
+                )
+                .background(Color.White.copy(alpha = 0.6f), shape = RoundedCornerShape(16.dp))
+                .fillMaxWidth()
+                .fillMaxHeight(0.80f)
+                .padding(
+                    start = 3.dp,
+                    top = 3.dp,
+                    end = 3.dp,
+                    bottom = 3.dp
+                )
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 4.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        modifier = Modifier
+                            .clickable { viewModel.updateShowReviewScreen(false) } // Close on icon click
+                            .padding(8.dp)
+                    )
+                }
+
+                Text(
+                    text = "Reseña",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                )
+
+                Text(
+                    text = "Título",
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+
+                TextField(
+                    value = reviewTitle,
+                    onValueChange = { viewModel.updateReviewTitle(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                )
+
+                Text(
+                    text = "Escribe tu reseña",
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+
+                TextField(
+                    value = reviewText,
+                    onValueChange = { viewModel.updateReviewText(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 100.dp)
+                        .padding(8.dp),
+                    maxLines = 6
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    repeat(5) { index ->
+                        Icon(
+                            if (index < selectedStars) {
+                                Icons.Filled.Star
+                            } else {
+                                Icons.Default.Star
+                            },
+                            tint = if (index < selectedStars) {
+                                Color(0xFFffd966)
+                            } else {
+                                Color.Unspecified
+                            },
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable {
+                                    viewModel.updateStars(index + 1);
+                                }
+                        )
+                    }
+                }
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material.MaterialTheme.colors.background),
+                    onClick = {
+                        viewModel.createReview(reviewTitle, reviewText, selectedStars)
+                        viewModel.updateShowReviewScreen(false)
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Guardar Reseña")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReviewList(reviews: List<Review>) {
+    Column {
+        Text(
+            text = "Reseñas de los usuarios",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        Divider()
+        reviews.forEach { review ->
+            ReviewItem(review = review)
+            Divider()
+        }
+    }
+}
+@Composable
+fun ReviewItem(review: Review) {
+    val initial = review.authorName!!.substring(0, 1).uppercase()
+
+    Row(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFffa07a)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initial,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f)
+        ) {
+            review.authorName?.let { Text(text = it, fontWeight = FontWeight.Bold) }
+            review.title?.let { Text(text = it, fontWeight = FontWeight.SemiBold, color = Color.DarkGray) }
+            review.description?.let { Text(text = it, textAlign = TextAlign.Justify) }
+            Row {
+                repeat(5) { index ->
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = if (index < review.rate!!) {
+                            Color(0xFFffd966)
+                        } else {
+                            Color.Unspecified
+                        },
+                    )
+                }
+            }
+            Text(text = review.creationDate.toString(), color = Color.Gray)
+        }
+    }
+}
+
+

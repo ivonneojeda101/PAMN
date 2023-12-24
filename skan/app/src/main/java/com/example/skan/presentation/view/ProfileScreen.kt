@@ -49,6 +49,7 @@ fun ProfileScreen() {
     NavHost(navController = navController, startDestination = "profile") {
         composable("profile") { MainContainer(viewModel, navController) }
         composable("favorites") { FavoriteScreen(navController)}
+        composable("reviews") { ReviewScreen(navController)}
     }
 }
 
@@ -191,6 +192,7 @@ fun Components(
                             .clickable {
                                 when (index) {
                                     0 -> navController.navigate("favorites")
+                                    1 -> navController.navigate("reviews")
                                     3 -> viewModel.logout(context)
                                     else -> {}
                                 }

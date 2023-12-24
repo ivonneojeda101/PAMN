@@ -49,7 +49,6 @@ fun SaveScreen(product: Product) {
 
     CoroutineScope(Dispatchers.IO).launch {
         viewModel.uiState.collect() { uiState ->
-            Log.println(Log.ASSERT, "Corutine ", uiState.toString())
             when (uiState) {
                 is MainUIState.Loading -> {}
                 is MainUIState.Error -> {

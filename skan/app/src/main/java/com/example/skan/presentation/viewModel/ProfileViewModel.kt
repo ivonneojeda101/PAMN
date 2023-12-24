@@ -1,7 +1,6 @@
 package com.example.skan.presentation.viewModel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,8 +19,8 @@ class ProfileViewModel: ViewModel() {
         val userData = sharedPreferencesManager.loadData("User")
         if (userData.isNotEmpty()){
             val gson = Gson()
-            val objectProduct = gson.fromJson(userData, User::class.java)
-            _user.value = objectProduct
+            val objectUser = gson.fromJson(userData, User::class.java)
+            _user.value = objectUser
         }else{
             _findUser.value = false
         }

@@ -46,7 +46,6 @@ fun SearchScreen() {
         delay(5000)
         viewModel.showProduct.collect() { value ->
             if (value) {
-                Log.println(Log.ASSERT, "Corutine ", value.toString())
                 showProduct = true
             }
         }

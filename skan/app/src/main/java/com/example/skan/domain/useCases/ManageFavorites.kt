@@ -24,7 +24,6 @@ class ManageFavorites(context: Context) {
         val type = object : TypeToken<List<Favorite>>() {}.type
         val listFavorites = gson.fromJson<List<Favorite>>(favoritesData, type)
         if (listFavorites != null){
-            Log.println(Log.ASSERT, "Favoriteos: ", favoritesData)
             return listFavorites.toMutableList()
         }
         else {

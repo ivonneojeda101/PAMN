@@ -1,12 +1,9 @@
 package com.example.skan.data.network
 
 
-import com.example.skan.domain.entities.Favorite
+import com.example.skan.domain.entities.*
 import retrofit2.Response
 import retrofit2.http.GET
-import com.example.skan.domain.entities.Ingredient
-import com.example.skan.domain.entities.Product
-import com.example.skan.domain.entities.User
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
@@ -37,4 +34,17 @@ interface AnalizerAPIClient {
 
         @POST(AppConfig.GET_ID_PRODUCT)
         suspend fun getProductById(@Body idProduct: Int): Response<Product>
+
+        @POST(AppConfig.CREATE_REVIEW)
+        @Headers("Content-Type: application/json")
+        suspend fun createReview(@Body review: Review): Response<String>
+
+        @POST(AppConfig.GET_REVIEWS)
+        suspend fun getReviews(@Body idProduct: Int): Response<List<Review>>
+
+        @POST(AppConfig.GET_USER_REVIEWS)
+        suspend fun getUserReviews(@Body idUser: Int): Response<List<Review>>
+
+        @POST(AppConfig.DELETE_REVIEW)
+        suspend fun deleteReview(@Body idReview: Int): Response<ResponseBody>
 }

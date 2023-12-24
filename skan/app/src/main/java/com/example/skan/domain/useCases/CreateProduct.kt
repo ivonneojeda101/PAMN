@@ -16,10 +16,8 @@ class CreateProduct {
     suspend operator fun invoke(product: Product, image: Bitmap, context: Context): Boolean {
         var finalBarCode = processBarCode.scanBarcodes(image)
         if (finalBarCode != null && finalBarCode.isNotEmpty()) {
-            Log.println(Log.ASSERT,"Create Product", finalBarCode)
             product.barcode = finalBarCode
             val response = productRepository.createProduct(product)
-            Log.println(Log.ASSERT,"Product Response", response.toString())
             if (response > 0) {
                 product.id = response
                 val sharedPreferencesManager = SharedPreferencesManager(context)
