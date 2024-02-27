@@ -1,4 +1,4 @@
-# Weather Prediction Project
+# SKIN analyzer of ingredients
 
 ## Cover Page
 - **Title:** SKIN analyzer of ingredients for cosmetic products
